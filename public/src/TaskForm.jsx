@@ -5,33 +5,29 @@ import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css"; 
 
 const TaskForm = () => {
-  // ניהול נתוני הטופס
   const [formData, setFormData] = useState({
-    subject: "", // נושא המשימה
-    assignee: "", // מבצע המשימה
-    dueDate: "", // תאריך יעד
-    priority: "1", // 
-    content: "", // תוכן המשימה
-    status: "Pending", // סטטוס המשימה (ברירת מחדל - "Pending")
+    subject: "",
+    assignee: "",
+    dueDate: "",
+    priority: "1", // הוספת שדה עדיפות
+    content: "", // הוספת תוכן המשימה
+    status: "Pending",
   });
 
   const navigate = useNavigate();
 
-  // פונקציה שמעדכנת את ה-state של הנתונים בהתאם לשינויים בטופס
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // פונקציה שמטפלת בשליחת הנתונים ל-Firebase
   const handleSubmit = async (e) => {
-    e.preventDefault(); // מונע רענון דף בעת שליחת הטופס
+    e.preventDefault();
     try {
-      await addDoc(collection(db, "tasks"), formData); // הוספת המשימה למסד הנתונים
-      // איפוס הטופס לאחר הוספת המשימה
+      await addDoc(collection(db, "tasks"), formData);
       setFormData({ subject: "", assignee: "", dueDate: "", priority: "1", content: "", status: "Pending" });
-      alert("Task added successfully!"); // הודעה למשתמש
+      alert("Task added successfully!");
     } catch (err) {
-      console.error("Error adding task: ", err); // טיפול בשגיאה
+      console.error("Error adding task: ", err);
     }
   };
 
@@ -55,9 +51,9 @@ const TaskForm = () => {
           <div className="mb-3">
             <label className="form-label">Priority</label>
             <select name="priority" className="form-select" value={formData.priority} onChange={handleChange} required>
-              <option value="1">High</option>
+              <option value="1">Low</option>
               <option value="2">Medium</option>
-              <option value="3">Low</option>
+              <option value="3">High</option>
             </select>
           </div>
           <div className="mb-3">

@@ -5,22 +5,19 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Modal, Button } from "react-bootstrap";
 
 const TaskList = () => {
-  // 🔹 משתנים לניהול הנתונים של המשימות
-  const [tasks, setTasks] = useState([]); // מערך שמחזיק את כל המשימות
-  const [searchTerm, setSearchTerm] = useState(""); // משתנה לשמירת מילת חיפוש
-  const [sortBy, setSortBy] = useState("priority"); // משתנה לקביעת סוג המיון
-  const [showModal, setShowModal] = useState(false); // שליטה על הצגת החלון הקופץ
-  const [taskContent, setTaskContent] = useState(""); // תוכן המשימה להצגה בחלון הקופץ
+  const [tasks, setTasks] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("priority");
+  const [showModal, setShowModal] = useState(false);
+  const [taskContent, setTaskContent] = useState("");
 
-  // 📌 פונקציה למיון וסינון המשימות בהתאם לחיפוש ולסדר העדיפויות
+  // עדכון מיון וחיפוש משימות עם בדיקות
   const updateSortedTasks = useCallback((tasksArray) => {
-    // 🔹 מסנן משימות לפי טקסט החיפוש
     let sortedTasks = [...tasksArray].filter(task =>
       (task.subject && task.subject.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (task.assignee && task.assignee.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    // 🔹 מיון המשימות - קודם לפי סטטוס ואז לפי עדיפות או תאריך
     sortedTasks.sort((a, b) => {
       if (a.status === "Pending" && b.status === "Completed") return -1;
       if (a.status === "Completed" && b.status === "Pending") return 1;
@@ -34,7 +31,6 @@ const TaskList = () => {
     setTasks(sortedTasks);
   }, [searchTerm, sortBy]);
 
-  // 📌 טעינת המשימות מ-Firebase בעת טעינת הרכיב
   useEffect(() => {
     const fetchTasks = async () => {
       const querySnapshot = await getDocs(collection(db, "tasks"));
@@ -48,11 +44,10 @@ const TaskList = () => {
     fetchTasks();
   }, [updateSortedTasks]);
 
-  // 📌 סימון משימה כהושלמה
+  // סימון משימה כהושלמה
   const markAsCompleted = async (taskId) => {
     try {
       await updateDoc(doc(db, "tasks", taskId), { status: "Completed" });
-
       setTasks(prevTasks => {
         const updatedTasks = prevTasks.map(task =>
           task.id === taskId ? { ...task, status: "Completed" } : task
@@ -64,7 +59,7 @@ const TaskList = () => {
     }
   };
 
-  // 📌 העברת משימה לארכיון
+  // העברת משימה לארכיון
   const archiveTask = async (task) => {
     try {
       await addDoc(collection(db, "archived_tasks"), task);
@@ -75,7 +70,7 @@ const TaskList = () => {
     }
   };
 
-  // 📌 מחיקת משימה מ-Firebase ומה-UI
+  // מחיקת משימה
   const deleteTask = async (taskId) => {
     try {
       await deleteDoc(doc(db, "tasks", taskId));
@@ -85,7 +80,7 @@ const TaskList = () => {
     }
   };
 
-  // 📌 הצגת תוכן המשימה בתוך חלון קופץ (Modal)
+  // הצגת תוכן משימה בחלון קופץ
   const handleShowModal = (content) => {
     setTaskContent(content);
     setShowModal(true);
@@ -94,8 +89,6 @@ const TaskList = () => {
   return (
     <div className="container mt-5">
       <h2 className="text-center text-primary">Task Manager</h2>
-
-      {/* 🔹 תיבת חיפוש וסינון */}
       <div className="d-flex justify-content-between mb-3">
         <input
           type="text"
@@ -113,8 +106,6 @@ const TaskList = () => {
           <option value="date">Sort by Due Date</option>
         </select>
       </div>
-
-      {/* 🔹 טבלת המשימות */}
       <table className="table table-bordered table-striped">
         <thead className="table-dark">
           <tr>
@@ -135,20 +126,13 @@ const TaskList = () => {
               <td>{task.priority || "N/A"}</td>
               <td>{task.status}</td>
               <td>
-                {/* 🔹 כפתור להצגת תוכן המשימה */}
                 <button className="btn btn-info btn-sm me-2" onClick={() => handleShowModal(task.content)}>📄 View Content</button>
-
-                {/* 🔹 כפתור סימון כהושלמה */}
                 {task.status === "Pending" && (
                   <button className="btn btn-success btn-sm me-2" onClick={() => markAsCompleted(task.id)}>✔ Complete</button>
                 )}
-
-                {/* 🔹 כפתור העברה לארכיון */}
                 {task.status === "Completed" && (
                   <button className="btn btn-warning btn-sm me-2" onClick={() => archiveTask(task)}>📂 Archive</button>
                 )}
-
-                {/* 🔹 כפתור מחיקה */}
                 <button className="btn btn-danger btn-sm" onClick={() => deleteTask(task.id)}>🗑️ Delete</button>
               </td>
             </tr>
@@ -156,7 +140,7 @@ const TaskList = () => {
         </tbody>
       </table>
 
-      {/* 🔹 חלון קופץ להצגת תוכן המשימה */}
+      {/* Modal for Task Content */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Task Content</Modal.Title>
